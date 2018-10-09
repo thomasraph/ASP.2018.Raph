@@ -12,7 +12,7 @@ import scipy.optimize as sopt
 def bsm_price(strike, spot, vol, texp, intr=0.0, divr=0.0, cp_sign=1):
     div_fac = np.exp(-texp*divr)
     disc_fac = np.exp(-texp*intr)
-    forward = spot / disc_fac * div_fac
+    forward = spot / (disc_fac*div_fac)
 
     if( texp<0 or vol*np.sqrt(texp)<1e-8 ):
         return disc_fac * np.fmax( cp_sign*(forward-strike), 0 )
@@ -42,9 +42,9 @@ class BsmModel:
         '''
         div_fac = np.exp(-texp*self.divr)
         disc_fac = np.exp(-texp*self.intr)
-        forward = spot / disc_fac*div_fac
-        volatility_std = vol*np.sqrt(texp)
-        d1 = np.log(forward/strike)/(volatility_std + 0.5*volatility_std)
+        forward = spot / (disc_fac*div_fac)
+        vol_std = self.vol*np.sqrt(texp)
+        d1 = np.log(forward/strike)/(vol_std + 0.5*vol_std)
         delta = ss.norm.cdf(d1)
         return delta
 
@@ -72,4 +72,8 @@ class BsmModel:
         gamma = cp_sign*div_fac* ss.norm.pdf(d1) / (spot*vol_std)
         return gamma
 
-
+    def impvol(self, price, strike, spot, texp, cp_sign=1):
+        iv_func = lambda _vol: \
+            bsm_price(strike, spot, _vol, texp, self.intr, self.divr, cp_sign) - price
+        vol = sopt.brentq(iv_func, 0, 10)
+        return vol
