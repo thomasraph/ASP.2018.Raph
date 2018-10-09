@@ -36,24 +36,45 @@ class NormalModel:
     
     def delta(self, strike, spot, vol, texp, intr=0.0, divr=0.0, cp_sign=1):
         ''' 
-        <-- PUT your implementation here
+        Delta Normal Model
         '''
-        return 0
+    def delta(self, strike, spot, texp, vol):
+        div_fac = np.exp(-texp*self.divr)
+        disc_fac = np.exp(-texp*self.intr)
+        forward = spot / (disc_fac*div_fac)
+        volatility_std = np.fmax(vol*np.sqrt(texp), 1.0e-16)
+        d = (forward - strike) / volatility_std
+        delta = cp_sign*ss.norm.cdf(cp_sign*d)
+        return delta
 
     def vega(self, strike, spot, vol, texp, intr=0.0, divr=0.0, cp_sign=1):
         ''' 
-        <-- PUT your implementation here
+        Vega Normal Model
         '''
-        return 0
+        div_fac = np.exp(-texp*self.divr)
+        disc_fac = np.exp(-texp*self.intr)
+        forward = spot / (disc_fac*div_fac)
+        volatility_std = np.fmax(vol*np.sqrt(texp), 1.0e-16)
+        d = (forward - strike) / volatility_std
+        vega = np.sqrt(texp)*ss.norm.pdf(d)*(-d)
+        return vega
 
     def gamma(self, strike, spot, vol, texp, intr=0.0, divr=0.0, cp_sign=1):
         ''' 
-        <-- PUT your implementation here
+        Gamma Normal Model
         '''
-        return 0
+        div_fac = np.exp(-texp*self.divr)
+        disc_fac = np.exp(-texp*self.intr)
+        forward = spot / (disc_fac*div_fac)
+        volatility_std = np.fmax(vol*np.sqrt(texp), 1.0e-16)
+        d = (forward - strike) / volatility_std
+        gamma = ss.norm.pdf(d)*(-d)/(self.vol*np.sqrt(T))
+        return gamma
 
     def impvol(self, price, strike, spot, texp, cp_sign=1):
         ''' 
-        <-- PUT your implementation here
+        Implied Volatility
         '''
-        return 0
+        implied_vol = lambda _vol: \ normal_formula(strike, spot, _vol, texp, self.intr, self.divr, cp_sign) - price
+        vol = sopt.brentq(implied_vol, 0, 10)
+        return imploed_vol
