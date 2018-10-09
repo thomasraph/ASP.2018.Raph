@@ -75,9 +75,9 @@ def basket_price_mc(
     
     if( bsm ) :
         '''
-        put the geometric brownian motion here
+        Geometric Brownian motion for BSM
         '''
-        pass
+        prices = forward[:, None]*(np.exp(-1/2*texp*(vol[:, None])**2)*np.sqrt(texp)* chol_m @ znorm_m)
     else:
         prices = forward[:,None] + np.sqrt(texp) * chol_m @ znorm_m
     
@@ -99,8 +99,18 @@ def basket_price_norm_analytic(
     normal_formula(strike, spot, vol, texp, intr=0.0, divr=0.0, cp_sign=1)
     it is already imorted
     '''
+    div_fac = np.exp(-texp*divr)
+    disc_fac = np.exp(-texp*intr)
+    #Forward Price of the basket
+    forward = spot / (disc_fac * div_fac)
+    forward_basket = weights @ forward
     
-    return 0.0
+    #volatility of the basket
+    cov_m = vol*cor_m*vol[:, None]
+    volatility_basket = np.sqrt(weights @ cov_m @ weights.T)
+    price = disc_fac*normal_formula(strike, forward_basket, volatility_basket, texp, intr=0.0, divr=0.0, cp_sign=cp_sign)
+    return price
+    
 
 def spread_price_kirk(strike, spot, vol, texp, corr, intr=0, divr=0, cp_sign=1):
     div_fac = np.exp(-texp*divr)
