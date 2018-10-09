@@ -72,9 +72,8 @@ class NormalModel:
         return gamma
 
     def impvol(self, price, strike, spot, texp, cp_sign=1):
-        ''' 
-        Implied Volatility
-        '''
-        implied_vol = lambda _vol: \ normal_formula(strike, spot, _vol, texp, self.intr, self.divr, cp_sign) - price
-        vol = sopt.brentq(implied_vol, 0, 10)
-        return imploed_vol
+        iv_func = lambda _vol: \
+        bsm_price(strike, spot, _vol, texp, self.intr, self.divr, cp_sign) - price
+        vol = sopt.brentq(iv_func, 0, 10)
+        return vol
+   

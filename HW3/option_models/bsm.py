@@ -72,8 +72,4 @@ class BsmModel:
         gamma = cp_sign*div_fac* ss.norm.pdf(d1) / (spot*vol_std)
         return gamma
 
-    def impvol(self, price, strike, spot, texp, cp_sign=1):
-        iv_func = lambda _vol: \
-            bsm_price(strike, spot, _vol, texp, self.intr, self.divr, cp_sign) - price
-        vol = sopt.brentq(iv_func, 0, 10)
-        return vol
+
